@@ -35,6 +35,8 @@ trust | trust in key (`true` for authentication, `false` for revocation)
 
 ## Trust Levels
 
+A key can have exactly one of the following trust levels:
+
 1. untrusted
 1. trusted
 	1. blindly trusted (witout user interaction) OR manually trusted (by user interaction)
