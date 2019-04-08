@@ -1,6 +1,6 @@
 # Algorithm of Automatic Trust Transfer (ATT)
 
-This algorithm should serve as a guidance for implementing the XMPP Extension Protocol (XEP) [Automatic Trust Transfer (ATT)](https://github.com/xsf/xeps/pull/763).
+This algorithm should serve as a guidance for implementing the XMPP Extension Protocol (XEP) Automatic Trust Transfer (ATT).
 
 ## Definitions
 
