@@ -207,7 +207,7 @@ else
 ### sendTrustMessage(owner, fingerprints, trust, recipient)
 
 ```
-send a message with createTrustMessageBody(keysOwner, fingerprints, trust) as its body to recipient
+send a message with createTrustMessageBody(keysOwner, fingerprints, trust) as its body to recipient and copies (via Message Carbons) for own devices only if they have authenticated keys
 ```
 
 ### createTrustMessageBody(owner, fingerprints, trust)
