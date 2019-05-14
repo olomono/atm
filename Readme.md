@@ -19,8 +19,8 @@ ATT is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end
 
 ### Implementation
 
-* [Algorithm (pseudocode)](https://github.com/olomono/att/blob/master/algorithm.md)
-* [Test Cases](https://github.com/olomono/att/blob/master/test-cases.md)
+* [Algorithm (pseudocode)](algorithm.md)
+* [Test Cases](test-cases.md)
 * [Implementation (for the XMPP Client *Conversations*)](https://github.com/siacs/Conversations/pull/3400)
 
 ### Standardization
