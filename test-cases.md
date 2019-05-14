@@ -1,6 +1,6 @@
 # Test Cases for Automatic Trust Transfer (ATT)
 
-These test cases should can be used for verifying the correctness of an implementation of the XMPP Extension Protocol (XEP) Automatic Trust Transfer (ATT).
+These test cases can be used for verifying the correctness of an implementation of the XMPP Extension Protocol (XEP) Automatic Trust Transfer (ATT).
 
 ## Manual Authentication
 
