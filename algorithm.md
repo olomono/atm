@@ -39,7 +39,7 @@ A key can have exactly one of the following trust levels:
 
 1. untrusted
 1. trusted
-	1. automatically (blindly) trusted (witout user interaction) OR manually trusted (by user interaction)
+	1. automatically (blindly) trusted (without user interaction) OR manually trusted (by user interaction)
 	1. authenticated
 
 ## Manual Authentication or Revocation
