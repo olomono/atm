@@ -1,37 +1,38 @@
-# Algorithm of Automatic Trust Transfer (ATT)
+# Algorithm of Automatic Trust Management (ATM)
 
-This algorithm should serve as a guidance for implementing the XMPP Extension Protocol (XEP) Automatic Trust Transfer (ATT).
+This algorithm should serve as a guidance for implementing the XMPP Extension Protocol (XEP) Automatic Trust Management (ATM).
 
 ## Definitions
 
 Term | Definition
 ---|---
-`AND` | logical "and" (*∧*)
-`OR` | logical "or" (*∨*)
-`!` | logical "not" (*¬*)
+`AND` | logical *and* (`∧`)
+`OR` | logical *or* (`∨`)
+`!` | logical *not* (`¬`)
 `//` | comment
 `<term>` | placeholder which must be replaced by a real term
-(<termA>, <termB>) | map / associative array of <termA> and <termB>
+(`<termA>`, `<termB>`) | map / associative array of `<termA>` and `<termB>`
 message | XMPP message
-key | OMEMO public identity key
+key | public long-term key
 bare JID | `<user>@<server>`
-XMPP URI | `xmpp:<bare-jid>?action;<action-key-1>=<value-1>;<action-key-2>=<value-2>;...;<action-key-N>=<value-n>`
-trust message URI | `xmpp:<bare-jid>?omemo-trust;auth=<omemo-key-fingerprint-1>;auth=<omemo-key-fingerprint-2>;<...>;auth=<omemo-key-fingerprint-n>;...>revoke=<omemo-key-fingerprint-n+1>;revoke=<omemo-key-fingerprint-n+2>;...;revoke=<omemo-key-fingerprint-n+m>`
+XMPP URI | `xmpp:<bare-jid>?query-type;<key-1>=<value-1>;<key-2>=<value-2>;...;<key-N>=<value-n>`
+trust message URI | `xmpp:<bare-jid>?trust-message;encryption=<encryption-namespace>;trust=<key-fingerprint-1>;trust=<key-fingerprint-2>;<...>;trust=<key-fingerprint-n>;...>distrust=<key-fingerprint-n+1>;distrust=<key-fingerprint-n+2>;...;distrust=<key-fingerprint-n+m>`
+encryptionNamespace | namespace of the key's encryption protocol
 sender | sender of the trust message (bare JID)
 senderFingerprint | fingerprint of the sender's key
 recipient | recipient of the trust message (bare JID)
 account | the user's own account (bare JID)
-contact | a user's contact (bare JIDs)
+contact | a user's contact (bare JID)
 contacts | the user's contacts (bare JIDs)
+owner | owner of keys represented by their fingerprints in trust message (bare JID, `jid` attribute in trust message element `<key-owner/>`)
 fingerprintsOfAuthenticatedKeysOfContact | fingerprints of authenticated keys of the corresponding contact
-owner | owner of keys contained in trust message (bare JID, `<bare-jid>` in trust message URI)
 fingerprintsOfAuthenticatedKeysOfOwner | fingerprints of authenticated keys of the corresponding owner
 fingerprints | fingerprints contained in trust message
-fingerprintsForAuthentication | fingerprints after `auth=` action keys in a trust message URI
-fingerprintsForRevocation | fingerprints after `revoke=` action keys in a trust message URI
-fingerprintsForTrustAction | fingerprints which should be used to authenticate their corresponding keys or to revoke the trust in their corresponding keys
+fingerprintsForAuthentication | fingerprints in `<trust/>` element
+fingerprintsForDistrusting | fingerprints in `<distrust/>` element
+fingerprintsForTrustAction | fingerprints used to authenticate or distrust their corresponding keys
 storage | local storage for data (e.g., a database)
-trust | trust in key (`true` for authentication, `false` for revocation)
+trust | trust in key (`true` for authentication, `false` for distrusting)
 
 ## Trust Levels
 
@@ -39,72 +40,103 @@ A key can have exactly one of the following trust levels:
 
 1. untrusted
 1. trusted
-	1. automatically (blindly) trusted (without user interaction) OR manually trusted (by user interaction)
-	1. authenticated
+	1. manually trusted (e.g., by clicking a button) OR automatically trusted (e.g., by the client for all keys of a bare JID until one of it is authenticated)
+	1. manually authenticated (e.g., by QR code scanning) OR automatcially authenticated (e.g., by ATM)
 
-## Manual Authentication or Revocation
+## Manual Authentication or Distrusting
+
+### Creating a Trust Message URI
+
+A trust message can be represented by an XMPP URI which can be shared as a QR code.
+Such a QR code can be scanned by persons who trust the QR code author to authenticate or distrust the keys corresponding to the fingerprints in the trust message.
+
+```
+// URI for Authentication
+if (there are authenticated keys with fingerprints of owner for encryption)
+	return createTrustMessageUri(owner, fingerprints, encryption, true)
+```
+
+```
+// URI for Distrusting
+if (there are untrusted keys with fingerprints of owner for encryption)
+	return createTrustMessageUri(owner, fingerprints, encryption, false)
+```
 
 ### Reading a Trust Message URI (e.g., by QR Code Scan, NFC, Wifi, Bluetooth etc.)
 
-* Attention: The user should only use a trust message URI from a trusted source since that source is able to initiate an authentication or revocation for keys which do not belong to it.
+Attention: The user should only use a trust message URI from a trusted source since that source is able to initiate an authentication or revocation for keys which do not belong to it.
 
 ```
 if (
 		input is XMPP URI
 		AND XMPP URI is URI of trust message
-		AND user confirmed to use that URI for authentication or revocation relating to the keys of the owner specified in the URI
+		AND user confirmed to use that URI for authenticating or distrusting the keys of the owner specified in the URI
 )
 
 authenticate(owner, fingerprintsForAuthentication, true)
-revoke(owner, fingerprintsForRevocation, true)
+distrust(owner, fingerprintsForDistrusting, true)
 ```
 
-## Automatic Authentication or Revocation
+## Automatic Authentication or Distrusting
 
 ### Receiving a Message
 
+An XMPP message is a trust message if it has a [trust message structure](https://xmpp.org/extensions/xep-0434.html#trust-message-structure).
+ATM uses [encrypted trust messages](https://xmpp.org/extensions/xep-0434.html#use-cases-encrypted-trust-message).
+
 ```
 if (
-		message is OMEMO encrypted
-		AND message body is XMPP URI
-		AND XMPP URI is trust message URI
-		AND (sender is recipient OR owner is sender)
+	message is signed by a signing mechanism
+	AND message is encrypted
+	AND message has trust message structure
+	AND (sender is recipient OR owner is sender)
 )
 	if (key of senderFingerprint is authenticated)
 		authenticate(owner, fingerprints, false)
-		revoke(owner, fingerprints, false)
+		distrust(owner, fingerprints, false)
 	else
 		cacheTrustMessageData(owner, fingerprint, senderFingerprint, true)
 		cacheTrustMessageData(owner, fingerprint, senderFingerprint, false)
 ```
 
+## Subroutines
+
+### createTrustMessageUri(owner, fingerprints, encryptionNamespace, trust)
+
+```
+uri = "xmpp:" + owner + "?trust-message;encryption=" + encryptionNamespace
+if (trust)
+	key = "trust"
+else
+	key = "distrust"
+for (fingerprint in fingerprints)
+	uri = uri + ";" + key + "=" + fingerprint
+return uri
+```
+
 ### authenticate(owner, fingerprints, sendTrustMessage)
 
-* If only the trust level *trusted* instead of also *authenticated* should be used, it is required to check if the current authentication is the first one.
+If only the trust level *trusted* instead of also *authenticated* should be used, it is required to check if the current authentication is the first one.
 If it is the first one, the distrusting of all keys which were not authenticated will only happen at the first time.
 If a user manually trusts a key afterwards, that one will be seen as authenticated.
 
 ```
-distrustAllUnauthenticatedKeys = true if owner has at least one blindly trusted key OR this is the first authentication of an owner's key
 for (fingerprint in fingerprints)
 	if (key of fingerprint is in storage)
 		if (key of fingerprint belongs to owner AND key of fingerprint is not authenticated)
 			authenticate key by fingerprint
 			add fingerprint to fingerprintsForTrustAction
-			authenticateOrRevokeWithCachedTrustMessageData(fingerprint)
+			authenticateOrDistrustWithCachedTrustMessageData(fingerprint)
 	else
 		preAuthenticate(owner, fingerprint)
 if (fingerprintsForTrustAction has at least one fingerprint)
-	if (distrustAllUnauthenticatedKeys)
+	if (there is at least one automatically trusted key of owner OR this is the first authentication of owner's key)
 		distrust all keys of owner which are not yet authenticated
 	if (sendTrustMessage)
 		sendTrustMessage(owner, fingerprintsForTrustAction, true)
 ```
 
-### revoke(owner, fingerprints, sendTrustMessage)
-
-* Is there a use case when it is important to know if the trust in a key is revoked or is it sufficient to know that a key is untrusted?
-If the latter is true, it is sufficient to use the term *untrusted* and not also *revoked*.
+### distrust(owner, fingerprints, sendTrustMessage)
 
 ```
 for (fingerprint in fingerprints)
@@ -114,22 +146,22 @@ for (fingerprint in fingerprints)
 			add fingerprint to fingerprintsForTrustAction
 			deleteTrustMessageDataForSender(fingerprint)
 	else
-		preRevoke(owner, fingerprint)
+		preDistrust(owner, fingerprint)
 if (fingerprintsForTrustAction is not empty AND sendTrustMessage)
 		sendTrustMessage(owner, fingerprintsForTrustAction, false)
 ```
 
-### authenticateOrRevokeWithCachedTrustMessageData(senderFingerprint)
+### authenticateOrDistrustWithCachedTrustMessageData(senderFingerprint)
 
 ```
 // Authentication
-authenticateOrRevokeWithCachedTrustMessageData(senderFingerprint, true)
+authenticateOrDistrustWithCachedTrustMessageData(senderFingerprint, true)
 
-// Revocation
-authenticateOrRevokeWithCachedTrustMessageData(senderFingerprint, false)
+// Distrusting
+authenticateOrDistrustWithCachedTrustMessageData(senderFingerprint, false)
 ```
 
-### authenticateOrRevokeWithCachedTrustMessageData(senderFingerprint, trust)
+### authenticateOrDistrustWithCachedTrustMessageData(senderFingerprint, trust)
 
 ```
 for (owner, fingerprints) in loadTrustMessageData(senderFingerprint, trust))
@@ -139,7 +171,7 @@ for (owner, fingerprints) in loadTrustMessageData(senderFingerprint, trust))
 	if (trust)
 		authenticate(owner, fingerprintsForTrustAction, false)
 	else
-		revoke(owner, fingerprintsForTrustAction, false)
+		distrust(owner, fingerprintsForTrustAction, false)
 ```
 
 ### cacheTrustMessageData(owner, fingerprint, senderFingerprint, trust)
@@ -178,7 +210,7 @@ delete data from storage for matching senderFingerprint
 add owner and fingerprint to storage so that corresponding keys which are added later are automatically authenticated
 ```
 
-### preRevoke(owner, fingerprint)
+### preDistrust(owner, fingerprint)
 
 ```
 add owner and fingerprint to storage so that corresponding keys which are added later are automatically distrusted
@@ -207,19 +239,7 @@ else
 ### sendTrustMessage(owner, fingerprints, trust, recipient)
 
 ```
-send a message with createTrustMessageBody(keysOwner, fingerprints, trust) as its body to recipient and copies (via Message Carbons) for own devices only if they have authenticated keys
+send a message with createTrustMessage(owner, fingerprints, trust) as its body to recipient and copies (via Message Carbons) for own devices only if they have authenticated keys
 ```
 
-### createTrustMessageBody(owner, fingerprints, trust)
 
-```
-trustMessageBody = "xmpp:" + owner + "?omemo-trust"
-if (trust)
-		actionKey = "auth"
-	else
-		actionKey = "revoke"
-for (fingerprint in fingerprints)
-	trustMessageBody = trustMessageBody + ";" + actionKey + "=" + fingerprint;
-}
-return trustMessageBody
-```

@@ -1,6 +1,6 @@
-# Automatic Trust Transfer (ATT)
+# Automatic Trust Management (ATM)
 
-ATT is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end encrypted communication using [OMEMO](https://xmpp.org/extensions/xep-0384.html) by reducing the number of manually made key authentications.
+ATM is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end encrypted communication by automating the authentication and distrusting of public long-term keys.
 
 ## Resources
 
@@ -8,27 +8,22 @@ ATT is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end
 
 #### Current Working Version
 
-* [HTML](https://olomono.github.io/xeps/build/xep-xxxx-automatic-trust-transfer.html)
-* [XML - Original](https://github.com/olomono/xeps/tree/automatic-trust-transfer)
+* [HTML](https://olomono.github.io/xeps/build/xep-xxxx-automatic-trust-management.html)
+* [XML - Original](https://github.com/olomono/xeps/tree/automatic-trust-management)
 
 #### To XMPP Standards Foundation (XSF) Submitted Version
 
-* [HTML](https://xmpp.org/extensions/inbox/automatic-trust-transfer.html)
-* [XML - Original](https://github.com/xsf/xeps/blob/master/inbox/automatic-trust-transfer.xml)
-* [Pull Request](https://github.com/xsf/xeps/pull/763)
+* [HTML](https://xmpp.org/extensions/xep-0450.html)
+* [XML - Original](https://github.com/xsf/xeps/blob/master/xep-0450.xml)
 
 ### Implementation
 
-* [Algorithm (pseudocode)](algorithm.md)
+* [Algorithm (Pseudocode)](algorithm.md)
 * [Test Cases](test-cases.md)
-* [Implementation (for the XMPP Client *Conversations*)](https://github.com/siacs/Conversations/pull/3400)
-
-### Standardization
-
-* [Discussion (on the mailing list)](https://mail.jabber.org/pipermail/standards/2019-March/035945.html)
+* An implementation for the XMPP Client [Kaidan](https://invent.kde.org/network/kaidan) will follow
 
 ## Process
 
-1. After a **manual authentication** like QR code scanning,
-1. the trust in specific keys is transferred by so called **trust messages** to other devices with already authenticated keys.
-1. Afterwards, the devices which received such an OMEMO encrypted trust message from a device with an already authenticated key can **automatically authenticate** the key given by the trust message.
+1. After an **initial authentication** (e.g., scanning a QR code)
+1. the trust in keys is communicated by [trust messages](https://xmpp.org/extensions/xep-0434.html) to other devices with already authenticated keys.
+1. Afterwards, the devices which received such a trust message from a device with an already authenticated key can **automatically authenticate or distrust** the key specified by the trust message.
