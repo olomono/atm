@@ -68,9 +68,9 @@ Attention: The user should only use a trust message URI from a trusted source si
 
 ```
 if (
-		input is XMPP URI
-		AND XMPP URI is URI of trust message
-		AND user confirmed to use that URI for authenticating or distrusting the keys of the owner specified in the URI
+	input is XMPP URI
+	AND XMPP URI is URI of trust message
+	AND user confirmed to use that URI for authenticating or distrusting the keys of the owner specified in the URI
 )
 
 authenticate(owner, fingerprintsForAuthentication, true)
