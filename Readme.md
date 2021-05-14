@@ -8,8 +8,8 @@ ATM is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end
 
 #### Current Working Version
 
-* [HTML](https://olomono.github.io/xeps/build/xep-xxxx-automatic-trust-management.html)
-* [XML - Original](https://github.com/olomono/xeps/tree/automatic-trust-management)
+* [HTML](https://olomono.github.io/xeps/preview/xep-0450.html)
+* [XML - Original](https://github.com/olomono/xeps/blob/automatic-trust-management/xep-0450.xml)
 
 #### To XMPP Standards Foundation (XSF) Submitted Version
 
