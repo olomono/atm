@@ -25,6 +25,7 @@ account | the user's own account (bare JID)
 contact | a user's contact (bare JID)
 contacts | the user's contacts (bare JIDs)
 owner | owner of keys represented by their fingerprints in trust message (bare JID, `jid` attribute in trust message element `<key-owner/>`)
+owners | multiple owners
 fingerprintsOfAuthenticatedKeysOfContact | fingerprints of authenticated keys of the corresponding contact
 fingerprintsOfAuthenticatedKeysOfOwner | fingerprints of authenticated keys of the corresponding owner
 fingerprints | fingerprints contained in trust message
@@ -89,14 +90,16 @@ if (
 	message is signed by a signing mechanism
 	AND message is encrypted
 	AND message has trust message structure
-	AND (sender is recipient OR owner is sender)
+	AND trust message is intended for ATM (i.e., the 'usage' attribute contains ATM's namespace)
 )
-	if (key of senderFingerprint is authenticated)
-		authenticate(owner, fingerprints, false)
-		distrust(owner, fingerprints, false)
-	else
-		cacheTrustMessageData(owner, fingerprint, senderFingerprint, true)
-		cacheTrustMessageData(owner, fingerprint, senderFingerprint, false)
+	for (owner in owners)
+		if (sender is account OR sender is owner)
+			if (key of senderFingerprint is authenticated)
+				authenticate(owner, fingerprintsForAuthentication, false)
+				distrust(owner, fingerprintsForDistrusting, false)
+			else
+				cacheTrustMessageData(owner, fingerprintsForAuthentication, senderFingerprint, true)
+				cacheTrustMessageData(owner, fingerprintsForDistrusting, senderFingerprint, false)
 ```
 
 ## Subroutines
@@ -174,16 +177,17 @@ for (owner, fingerprints) in loadTrustMessageData(senderFingerprint, trust))
 		distrust(owner, fingerprintsForTrustAction, false)
 ```
 
-### cacheTrustMessageData(owner, fingerprint, senderFingerprint, trust)
+### cacheTrustMessageData(owner, fingerprints, senderFingerprint, trust)
 
 ```
-if (trust message data for owner, fingerprint, senderFingerprint, trust exists)
-	return
-if (trust message data for owner, fingerprint, senderFingerprint, !trust exists)
-	update data in storage for owner, fingerprint, senderFingerprint with !trust
-if (trust message data for owner, fingerprint, !trust exists)
-	delete data in storage for owner, fingerprint
-insert trust message data into storage for owner, fingerprint, senderFingerprint, trust
+for (fingerprint in fingerprints)
+	if (trust message data for owner, fingerprint, senderFingerprint, trust exists)
+		return
+	if (trust message data for owner, fingerprint, senderFingerprint, !trust exists)
+		update data in storage for owner, fingerprint, senderFingerprint with !trust
+	if (trust message data for owner, fingerprint, !trust exists)
+		delete data in storage for owner, fingerprint
+	insert trust message data into storage for owner, fingerprint, senderFingerprint, trust
 ```
 
 ### loadTrustMessageData(senderFingerprint, trust)
