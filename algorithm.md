@@ -21,7 +21,8 @@ encryptionNamespace | namespace of the key's encryption protocol
 sender | sender of the trust message (bare JID)
 senderFingerprint | fingerprint of the sender's key
 recipient | recipient of the trust message (bare JID)
-account | the user's own account (bare JID)
+account | the user's own account
+ownJid | the account's JID (bare JID)
 contact | a user's contact (bare JID)
 contacts | the user's contacts (bare JIDs)
 owner | owner of keys represented by their fingerprints in trust message (bare JID, `jid` attribute in trust message element `<key-owner/>`)
@@ -93,7 +94,7 @@ if (
 	AND trust message is intended for ATM (i.e., the 'usage' attribute contains ATM's namespace)
 )
 	for (owner in owners)
-		if (sender is account OR sender is owner)
+		if (sender is ownJid OR sender is owner)
 			if (key of senderFingerprint is authenticated)
 				authenticate(owner, fingerprintsForAuthentication, false)
 				distrust(owner, fingerprintsForDistrusting, false)
@@ -223,21 +224,21 @@ add owner and fingerprint to storage so that corresponding keys which are added 
 ### sendTrustMessage(owner, fingerprints, trust)
 
 ```
-if (owner is account)
+if (owner is ownJid)
 	deliveredViaMessageCarbons = false
 	for (contact in contacts)
 		if (contact has at least one authenticated key)
-			sendTrustMessage(account, fingerprints, trust, contact)
+			sendTrustMessage(ownJid, fingerprints, trust, contact)
 			deliveredViaMessageCarbons = true
 		if (account has at least one authenticated key AND trust)
-			sendTrustMessage(contact, fingerprintsOfAuthenticatedKeysOfContact, true, account)
+			sendTrustMessage(contact, fingerprintsOfAuthenticatedKeysOfContact, true, ownJid)
 	if (!deliveredViaMessageCarbons AND fingerprints are less than authenticated keys of account)
-		sendTrustMessage(account, fingerprints, trust, account)
+		sendTrustMessage(ownJid, fingerprints, trust, ownJid)
 else
 	if (account has at least one authenticated key)
-		sendTrustMessage(owner, fingerprints, true, account)
+		sendTrustMessage(owner, fingerprints, true, ownJid)
 	if (owner has at least one authenticated key AND trust)
-		sendTrustMessage(account, fingerprintsOfAuthenticatedKeysOfOwner, true, owner)
+		sendTrustMessage(ownJid, fingerprintsOfAuthenticatedKeysOfOwner, true, owner)
 ```
 
 ### sendTrustMessage(owner, fingerprints, trust, recipient)
