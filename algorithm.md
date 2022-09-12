@@ -42,8 +42,10 @@ A key can have exactly one of the following trust levels:
 
 1. untrusted
 1. trusted
-	1. manually trusted (e.g., by clicking a button) OR automatically trusted (e.g., by the client for all keys of a bare JID until one of it is authenticated)
-	1. manually authenticated (e.g., by QR code scanning) OR automatcially authenticated (e.g., by ATM)
+	1. manually trusted (e.g., by clicking a button)
+	1. automatically trusted (e.g., by the client for all keys of a bare JID until one of it is authenticated)
+	1. trusted by manual authentication / manually authenticated (e.g., by QR code scanning)
+	1. trusted by automatic authentication / automatically authenticated (e.g., by ATM)
 
 ## Manual Authentication or Distrusting
 
@@ -120,21 +122,21 @@ return uri
 
 ### authenticate(owner, fingerprints, sendTrustMessage)
 
-If only the trust level *trusted* instead of also *authenticated* should be used, it is required to check if the current authentication is the first one.
-If it is the first one, the distrusting of all keys which were not authenticated will only happen at the first time.
+If only the trust levels *untrusted* and *trusted* instead of also *authenticated* should be used, it is required to check if the current authentication is the first one.
+If it is the first one, the distrusting of all keys that are not yet authenticated will only happen at the first time.
 If a user manually trusts a key afterwards, that one will be seen as authenticated.
 
 ```
 for (fingerprint in fingerprints)
 	if (key of fingerprint is in storage)
 		if (key of fingerprint belongs to owner AND key of fingerprint is not authenticated)
-			authenticate key by fingerprint
+			mark key of fingerprint as authenticated
 			add fingerprint to fingerprintsForTrustAction
 			authenticateOrDistrustWithCachedTrustMessageData(fingerprint)
 	else
 		preAuthenticate(owner, fingerprint)
 if (fingerprintsForTrustAction has at least one fingerprint)
-	if (there is at least one automatically trusted key of owner OR this is the first authentication of owner's key)
+	if (there is at least one automatically trusted key of owner OR (only needed if trust level *authenticated* is not used) this is the first authentication for owner)
 		distrust all keys of owner which are not yet authenticated
 	if (sendTrustMessage)
 		sendTrustMessage(owner, fingerprintsForTrustAction, true)
@@ -146,7 +148,7 @@ if (fingerprintsForTrustAction has at least one fingerprint)
 for (fingerprint in fingerprints)
 	if (key of fingerprint is in storage)
 		if (key of fingerprint belongs to owner AND key of fingerprint is trusted)
-			distrust key by fingerprint
+			mark key of fingerprint as untrusted
 			add fingerprint to fingerprintsForTrustAction
 			deleteTrustMessageDataForSender(fingerprint)
 	else
@@ -185,7 +187,8 @@ for (fingerprint in fingerprints)
 	if (trust message data for owner, fingerprint, senderFingerprint, trust exists)
 		return
 	if (trust message data for owner, fingerprint, senderFingerprint, !trust exists)
-		update data in storage for owner, fingerprint, senderFingerprint with !trust
+		update data in storage for owner, fingerprint, senderFingerprint with trust
+		return
 	if (trust message data for owner, fingerprint, !trust exists)
 		delete data in storage for owner, fingerprint
 	insert trust message data into storage for owner, fingerprint, senderFingerprint, trust
@@ -244,7 +247,7 @@ else
 ### sendTrustMessage(owner, fingerprints, trust, recipient)
 
 ```
-send a message with createTrustMessage(owner, fingerprints, trust) as its body to recipient and copies (via Message Carbons) for own devices only if they have authenticated keys
+send a trust message for owner, fingerprints and trust to recipient and copies (via Message Carbons) for own devices only if they have authenticated keys
 ```
 
 
