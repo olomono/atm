@@ -1,6 +1,6 @@
 # Automatic Trust Management (ATM)
 
-ATM is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end encrypted communication by automating the authentication and distrusting of public long-term keys.
+ATM is an XMPP Extension Protocol (XEP) that aims to simplify secure end-to-end encrypted communication by automating the authentication and distrusting of public long-term keys.
 
 ## Resources
 
@@ -9,7 +9,7 @@ ATM is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end
 #### Current Working Version
 
 * [HTML](https://olomono.github.io/xeps/preview/xep-0450.html)
-* [XML - Original](https://github.com/olomono/xeps/blob/automatic-trust-management/xep-0450.xml)
+* [XML - Original](https://github.com/olomono/xeps/blob/atm/xep-0450.xml)
 
 #### To XMPP Standards Foundation (XSF) Submitted Version
 
@@ -20,13 +20,14 @@ ATM is an XMPP Extension Protocol (XEP) which aims to simplify secure end-to-end
 
 * [Algorithm (Pseudocode)](algorithm.md)
 * [Test Cases](test-cases.md)
-* An implementation for the XMPP Client [Kaidan](https://invent.kde.org/network/kaidan) will follow
+* [QXmpp](https://github.com/qxmpp-project/qxmpp)
+* [Kaidan](https://invent.kde.org/network/kaidan)
 
 ## Process
 
 1. After an **initial authentication** (e.g., scanning a QR code)
 1. the trust in keys is communicated by [trust messages](https://xmpp.org/extensions/xep-0434.html) to other devices with already authenticated keys.
-1. Afterwards, the devices which received such a trust message from a device with an already authenticated key can **automatically authenticate or distrust** the key specified by the trust message.
+1. Afterwards, the devices that received such a trust message from a device with an already authenticated key can **automatically authenticate or distrust** the key specified by the trust message.
 
 ## Example
 
@@ -61,10 +62,10 @@ Doing those authentications manually (e.g., by scanning QR codes containing the 
 ### With ATM
 
 When you use ATM, the number of manual authentications can be reduced to a minimum while the other authentications are done automatically and in a secure manner.
-The authentications which ATM needs to automate the remaining authentications are the *initial authentications*.
+The authentications that ATM needs to automate the remaining authentications are the *initial authentications*.
 In the following, only the initial authentications are counted.
 
-An example procedure which makes use of QR code scanning could be the following:
+An example procedure making use of QR code scanning could be the following:
 
 1. **Alice** scans with her notebook the QR code of her smartphone to authenticate her smartphone's key **(1)**.
 1. Alice scans with her tablet the QR code of her smartphone to authenticate her smartphone key **(2)**.
